@@ -1,0 +1,36 @@
+package arc;
+
+struct distance_t {
+    int64_t timestamp;
+    int16_t measure;
+}
+
+struct imu_t {
+    int64_t timestamp;
+    float compass[3];
+    float accel[3];
+    float gyro[3];
+}
+
+struct control_t {
+    int64_t timestamp;
+    int8_t motor; 
+    int8_t servo;
+}
+
+struct control_motor_t {
+    int64_t timestamp;
+    int8_t motor; 
+}
+
+struct control_servo_t {
+    int64_t timestamp;
+    int8_t servo;
+}
+
+struct camera_t {
+    int64_t timestamp;
+    int8_t x;
+    int8_t y;
+    int8_t radius;
+}

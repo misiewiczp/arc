@@ -1,0 +1,14 @@
+[Unit]
+Description=RC Car Control Center - Web App
+
+[Service]
+PIDFile=/tmp/arc_webapp.pid
+User=root
+Group=root
+Restart=always
+KillSignal=SIGQUIT
+WorkingDirectory=/var/opt/arc/web.app/
+ExecStart=/var/opt/arc/web.app/server.js
+
+[Install]
+WantedBy=multi-user.target
