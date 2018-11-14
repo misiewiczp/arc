@@ -1,0 +1,14 @@
+[Unit]
+Description=RC Car Control Center - Sensor Logging
+
+[Service]
+PIDFile=/tmp/arc_logging.pid
+User=root
+Group=root
+Restart=always
+KillSignal=SIGQUIT
+WorkingDirectory=/var/opt/arc/ctrl.app/
+ExecStart=/var/opt/arc/ctrl.app/server.sh
+
+[Install]
+WantedBy=multi-user.target

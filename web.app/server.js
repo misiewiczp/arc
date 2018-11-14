@@ -7,7 +7,7 @@ const { exec } = require('child_process');
 logging_on = false;
 
 // serve files from the public directory
-app.use(express.static('public'));
+app.use(express.static(process.cwd() + '/public'));
 
 // start the express web server listening on 3000
 app.listen(3000, () => {
@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 app.post('/logging_on', (req, res) => {
     if (!logging_on)
     {
-	exec('systemctl restart arc_logging.service', 
+	exec('systemctl start arc_logging.service', 
 	(err, stdout, stderr) => {
 	    if (err) {
 		// node couldn't execute the command
@@ -32,7 +32,8 @@ app.post('/logging_on', (req, res) => {
 
 	     console.log('stdout: ${stdout}');
 	     console.log('stderr: ${stderr}');
-	     res.send("OK");
+	     res.send("Logging ON");
+	     logging_on = true;
 	});
     } else 
 	exec('systemctl stop arc_logging.service', 
@@ -45,7 +46,9 @@ app.post('/logging_on', (req, res) => {
 
 	     console.log('stdout: ${stdout}');
 	     console.log('stderr: ${stderr}');
-	     res.send("OK");
+	     res.send("Logging OFF");
+	     logging_on = false;
 	});
+
     }
 );
