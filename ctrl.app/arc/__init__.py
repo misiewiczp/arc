@@ -9,3 +9,4 @@ from .control_t import control_t
 from .control_motor_t import control_motor_t
 from .control_servo_t import control_servo_t
 from .camera_t import camera_t
+from .gps_t import gps_t

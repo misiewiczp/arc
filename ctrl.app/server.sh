@@ -29,8 +29,7 @@ start_imu(){
 }
 
 start_gps(){
-#	python src/sensor/gps.py --print >> ${DUMP_DIR}/gps.csv &
-	cat /dev/ttyAMA0 | grep -v unknown >> ${DUMP_DIR}/gps.csv
+	python src/sensor/gps.py --print >> ${DUMP_DIR}/gps.csv
 }
 
 start_camera(){

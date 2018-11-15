@@ -12,6 +12,15 @@ struct imu_t {
     float gyro[3];
 }
 
+struct gps_t {
+    int64_t timestamp;
+    int32_t fix_time;
+    int32_t fix_date;
+    float lat;
+    float lon;
+    float vel;
+}
+
 struct control_t {
     int64_t timestamp;
     int8_t motor; 
