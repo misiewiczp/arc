@@ -8,7 +8,7 @@ from arc import distance_t
 import sys
 
 bPrint = 0
-if (sys.argc > 0 and sys.argv[1] == '--print'):
+if (len(sys.argv) > 1 and sys.argv[1] == '--print'):
     bPrint = 1
 
 

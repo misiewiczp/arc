@@ -8,7 +8,7 @@ import math
 import lcm
 
 bPrint = 0
-if (sys.argv[1] == '--print'):
+if (len(sys.argv) > 1 and sys.argv[1] == '--print'):
     bPrint = 1
 
    
