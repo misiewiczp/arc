@@ -36,10 +36,14 @@ start_camera(){
 	python src/sensor/camera.py ${DUMP_DIR}
 }
 
+start_ctrl(){
+	python src/actuator/controller.py --print >> ${DUMP_DIR}/ctrl.csv
+}
 
 start_distance &
 start_imu &
-start_gps &
-start_camera &
+#start_gps &
+#start_camera &
+start_ctrl &
 
 wait
