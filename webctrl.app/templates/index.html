@@ -2,12 +2,20 @@
   <html lang="en">
   <head>
     <title>ARC Control App</title>
+<style>
+#stats.div {
+   display: inline;
+   color: red;
+}
+</style>
   </head>
   <body>
-    <h3 style='color: #ccc;font-size: 30px;'>No message yet..</h3>
-    <div class="message_holder"></div>
+<div id="stats">
+Motor: <div id="motor">...</div>
+Servo: <div id="servo">...</div>
+Distance: <div id="distance">...</div>
+<div>
 
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
     <script type="text/javascript">
@@ -18,8 +26,13 @@
         } )
       } )
       socket.on( 'CTRL_LOG', function( msg ) {
-        console.log( msg )
-        $( 'div.message_holder' ).append( '<div><b style="color: #000">'+msg.motor+'</b> '+msg.servo+'</div>' )
+//        console.log(msg);
+        $( "#motor" ).html( msg.m );
+        $( "#servo" ).html( msg.s );
+      })
+      socket.on( 'DSTN', function( msg ) {
+//       console.log(msg);
+        $( "#distance" ).text( msg.m );
       })
     </script>
 
