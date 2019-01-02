@@ -27,7 +27,10 @@ enabled_channels = set('D2,D4'.split(',')) # 3,5
 for channel in device.channels:
     channel.enabled = (channel.name in enabled_channels)
 
+device.samplerate = 1000000
+
 session = context.create_session()
+
 session.add_device(device)
 session.start()
 output = context.output_formats['csv'].create_output(device)
@@ -41,7 +44,7 @@ lc = lcm.LCM()
 zeros = [0,0]
 ones = [0,0]
 was_one = [True, True]
-lastval = [-1, -1]
+lastval = ['0', '0']
 wave = [0,0]
 emitevery = 10
 learn_till = 10
@@ -59,9 +62,11 @@ def calc_pwm(idx, val):
             if idx == 0:
                 c_t.motor = round(ones[idx]) #float(ones[idx])/float(ones[idx]]+zeros[idx]) # round( (float(ones[0])/float(learned[0])-1)*30 ) #/float(ones[0]+zeros[0])*100
                 emit_lcm[0] = True
+#                print(idx, ones[idx])
             else:
                 c_t.servo = round(ones[idx]) #float(ones[idx])/float(ones[idx]]+zeros[idx]) # round( (float(ones[1])/float(learned[1])-1)*30 )
                 emit_lcm[1] = True
+#                print(idx, ones[idx])
             
         if wave[idx] <= learn_till and was_one[idx]:
             learned[idx] += ones[idx]
@@ -85,15 +90,18 @@ def calc_pwm(idx, val):
 def datafeed_in(device, packet):
     global emit_lcm
     text = output.receive(packet)
+#    print (text)
     for data in text.split("\n"):
         if len(data) < 5:
             continue
-        calc_pwm(0, data[2])
-        calc_pwm(1, data[4])
+#        print(data[2], ':', data[4])
+        calc_pwm(0, data[2]) # motor
+        calc_pwm(1, data[4]) # servo
         if emit_lcm[0] and emit_lcm[1]: #change
             if (time.time() > c_t.timestamp):
                 c_t.timestamp = time.time()
-                lc.publish('CTRL', c_t.encode())
+                print('motor:',c_t.motor, 'servo:',c_t.servo)
+#                lc.publish('CTRL', c_t.encode())
             emit_lcm = [False, False]
 
 

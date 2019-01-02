@@ -22,6 +22,7 @@ def arc_set_pwm(pin, val, cap):
     elif (val < -cap):
         val = -cap
     prc = round(1000000*(305+val*90.0/100.0)/3200)
+    print prc
     pi.hardware_PWM(pin, 63, prc)
 
 
@@ -58,8 +59,9 @@ def request_handler_ctrl_motor(channel, data):
     print ( "{},{},{},{},{}".format(c_t.timestamp,last_servo, last_motor,SERVO_CAP,MOTOR_CAP) )
 
 
-arc_set_pwm(MOTOR_PIN, 0, 100)
-arc_set_pwm(SERVO_PIN, 0, 100)
+arc_set_pwm(MOTOR_PIN, 0, MOTOR_CAP)
+arc_set_pwm(SERVO_PIN, 0, SERVO_CAP)
+
 c_t.timestamp=time.time()
 c_t.servo = 0
 c_t.motor = 0
@@ -74,6 +76,9 @@ lc.subscribe('CTRL', request_handler_ctrl)
 try:
     while True:
         lc.handle()
+        time.sleep(0.01)
 except KeyboardInterrupt:
+    arc_set_pwm(MOTOR_PIN, 0, MOTOR_CAP)
+    arc_set_pwm(SERVO_PIN, 0, SERVO_CAP)
     pass
 

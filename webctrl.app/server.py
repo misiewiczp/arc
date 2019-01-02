@@ -1,6 +1,6 @@
 import threading
 import time
-from flask import Flask,render_template
+from flask import Flask,render_template,send_from_directory
 from flask_socketio import SocketIO
 import eventlet
 import lcm
@@ -15,22 +15,27 @@ socketio = SocketIO(app)
 lc = lcm.LCM()
 runLoop = True
 
+c_t = control_t()
+
 lastMsgTime = {"DSTN":0}
 TIME_LIMIT=0.5 # update twice a second
 
-@app.before_first_request
-def activate_job():
-    def run_job():
-        while runLoop:
-            lc.handle()
-            eventlet.sleep(0) # otherwise emit's wait for long time
-    thread = threading.Thread(target=run_job)
-    thread.start()
+def lc_handle():
+    while runLoop:
+        lc.handle_timeout(10)
+        eventlet.sleep(0.1) # otherwise emit's wait for long time
 
+#thread = threading.Thread(target=run_job)
+#thread.start()
+eventlet.spawn( lc_handle )
 
 @app.route('/')
 def sessions():
     return render_template('index.html')
+
+@app.route('/js/<path:path>')
+def send_js(path):
+    return send_from_directory('js', path)
 
 def messageReceived(methods=['GET', 'POST']):
     print('message was received!!!')
@@ -38,7 +43,10 @@ def messageReceived(methods=['GET', 'POST']):
 @socketio.on('CTRL')
 def handle_CTRL_event(json, methods=['GET', 'POST']):
     print('CTRL req: ' + str(json))
-    socketio.emit('CTRL_LOG', json, callback=messageReceived)
+    c_t.timestamp = time.time()
+    c_t.servo = json['s']
+    c_t.motor = json['m']
+    lc.publish('CTRL', c_t.encode())
 
 def skip_emit(queue, json):
     global lastMsgTime
@@ -52,6 +60,7 @@ def lcm_dstn(channel, data):
 
 def lcm_ctrl_log(channel, data):
     m = control_t.decode(data)
+    print(m.motor, m.servo)
     socketio.emit('CTRL_LOG', {'m':m.motor, 's':m.servo})
 
 lc.subscribe("DSTN", lcm_dstn)
@@ -60,7 +69,8 @@ lc.subscribe("CTRL_LOG", lcm_ctrl_log)
 
 if __name__ == '__main__':
     try:
-        socketio.run(app, host='0.0.0.0', debug=False)
+        print "Starting server ..."
+        socketio.run(app, host='0.0.0.0', port=9080, debug=True)
         runLoop = False
     except KeyboardInterrupt:
         runLoop = False
