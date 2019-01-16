@@ -1,0 +1,156 @@
+#!/usr/bin/python
+import argparse
+import time
+import lcm
+from arc import control_t
+import sys
+import math
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--x', type=float,  default=0)
+parser.add_argument('--y', type=float,  default=0)
+#parser.add_argument('--time', type=int, default=5)
+args = parser.parse_args()
+#print(args)
+
+DEF_MOTOR=20
+AUTO_LEN=0.37
+AUTO_WHEELS_DIFF=0.26
+AUTO_WIDTH=0.20
+
+lc = lcm.LCM()
+msg = control_t()
+
+# meters / sec - full, 100 - 15 m/s, -100 - -15m/s
+def velocity(prc_motor):
+    return float(prc_motor)*15.0/100.0
+
+# degrees - full, 100 - 70, -100 - -70
+def angle(prc_servo):
+    return float(prc_servo)*70.0/100.0
+
+def turn_radious(prc_servo):
+    alpha = angle(prc_servo)
+    if (alpha == 0):
+        return float('inf')
+    elif alpha < 0:
+        alpha = -alpha
+    return AUTO_WHEELS_DIFF / 2.0 / math.sin( alpha / 180.0 * math.pi)
+
+# degrees/second
+def omega(prc_motor, prc_servo):
+    v = velocity(prc_motor)
+    r = turn_radious(prc_servo)
+    print 'Radius', r, prc_servo
+    if (r == float('inf')):
+        return 0.0
+    return 360 * v / (2 * math.pi * r)
+
+def change_x_y_yaw(prc_motor, prc_servo, x_offset, y_offset, yaw_offset, dt):
+    v = velocity(prc_motor)
+    w = omega(prc_motor, prc_servo)
+    yaw_offset_rad = yaw_offset / 180.0 * math.pi
+    sgn = 1
+    if prc_servo > 0:
+        sgn = -1  # turning right
+    return [x_offset + v*dt*math.cos(yaw_offset_rad), y_offset + v*dt*math.sin(yaw_offset_rad), yaw_offset + sgn*w*dt]
+
+
+def calc_greedy_action(prc_motor, prc_servo, x_offset, y_offset, yaw_offset, tgt_x, tgt_y):
+    dx = tgt_x - x_offset
+    dy = tgt_y - y_offset
+    yaw_rad = yaw_offset / 180.0 * math.pi
+    co = math.cos(yaw_rad)
+    si = math.sin(yaw_rad)
+    # recalculate position according to new yaw
+    diff_x = dy*si + dx*co
+    diff_y = -(dy*co - dx*si) # + goes right, - goes left
+
+    if diff_y < 0.1 and diff_y > -0.1:
+        if diff_x > 15:
+            return [100,0]
+        elif diff_x > 5:
+            return [50, 0]
+        elif diff_x > 0.1:
+            return [10,0]
+        elif diff_x > -0.1:
+            return [0, 0]
+        elif diff_x > -1:
+            return [-10,0]
+        elif diff_x <= -1:
+            return [50, 100]
+    elif diff_y >= 0.1:
+        if diff_x > 15:
+            return [100, diff_y / diff_x * 100.0]
+        elif diff_x > 5:
+            return [50,  diff_y / diff_x * 100.0]
+        elif diff_x > 0.1:
+            return [10, 100]
+        elif diff_x > -0.1:
+            return [10, 100]
+        elif diff_x > -1:
+            return [10,100]
+        elif diff_x <= -15:
+            return [100, 100]
+        elif diff_x <= -1:
+            return [50, 100]
+    elif diff_y <= -0.1:
+        if diff_x > 15:
+            return [100, diff_y / diff_x * 100.0]
+        elif diff_x > 5:
+            return [50,  diff_y / diff_x * 100.0]
+        elif diff_x > 0.1:
+            return [10, -100]
+        elif diff_x > -0.1:
+            return [10, -100]
+        elif diff_x > -1:
+            return [10,-100]
+        elif diff_x <= -15:
+            return [100, -100]
+        elif diff_x <= -1:
+            return [50, -100]
+
+    return [0, 0]
+
+
+def control(prc_motor, prc_servo):
+    msg.timestamp = time.time()
+    msg.motor = prc_motor
+    msg.servo = prc_servo
+    lc.publish('CTRL', msg.encode())
+    print 'REQ:',prc_motor, prc_servo
+
+
+x, y, yaw = [0,0,0]
+motor, servo = [0,0]
+for i in range(20):
+    motor, servo = calc_greedy_action(motor, servo, x, y, yaw, args.x, args.y)
+    x, y, yaw = change_x_y_yaw(motor, servo, x, y, yaw, 0.1)
+    print i*0.1, ". ", yaw, x, y, motor, servo
+
+#print motor, servo
+
+
+sys.exit()
+
+
+last_res = [0.0,0.0,0.0]
+for i in range(10):
+    last_res = change_x_y_yaw(10, 1, last_res[0], last_res[1], last_res[2], 0.1)
+    print last_res
+
+
+sys.exit()
+
+def calc_plan(x, y):
+    return [ [10,10] ]
+
+
+plan = calc_plan(args.x, args.y)
+
+for c in plan:
+    print c
+    control(DEF_MOTOR, c[1])
+    time.sleep(0.1)
+
+control(0, 0)

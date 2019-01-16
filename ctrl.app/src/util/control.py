@@ -24,5 +24,5 @@ lc.publish('CTRL', msg.encode())
 time.sleep( args.time )
 msg.timestamp = time.time()
 msg.motor = 0
-msg.servo = 0
+msg.servo = args.prc_servo
 lc.publish('CTRL', msg.encode())

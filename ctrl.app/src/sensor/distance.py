@@ -69,5 +69,5 @@ while True:
     d_t.timestamp = long(time.time()*1000*1000)
     lc.publish("DSTN", d_t.encode())
     if bPrint:
-        print( "{},{}".format(d_t.timestamp, round(d_t.measure)) )
+        print( "{},{}".format(int(d_t.timestamp/1000), round(d_t.measure)) )
     time.sleep(0.1)

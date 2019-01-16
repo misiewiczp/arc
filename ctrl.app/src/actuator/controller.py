@@ -6,7 +6,7 @@ from arc import control_t, control_servo_t, control_motor_t
 MOTOR_PIN=13
 SERVO_PIN=18
 
-MOTOR_CAP=25
+MOTOR_CAP=50
 SERVO_CAP=100
 
 last_motor=0
