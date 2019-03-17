@@ -34,13 +34,16 @@ void setup() {
   SPCR |= bit(SPIE);
 }
 
-void loop() {
-    initMeasure();
-    delay(100);
-}
-
 volatile long timer = 0;
 volatile int cnt = 0;
+
+
+void loop() {
+    if (timer == 0)
+        initMeasure();
+    delay(10); // shorter than maximum time of over 50ms
+}
+
 ISR(PCINT2_vect)
 {
     if (PIND & (1<<PD1)) {
@@ -68,7 +71,7 @@ ISR (SPI_STC_vect)
 
   if (c == REQ_RC)  // starting new sequence?
   {
-    buf.rc.motor = val/ULTRASOUND_SPEED_2; // /2 - two directions, /29 - 1 cm = 29 micorseconds
+    buf.rc.motor = val/ULTRASOUND_SPEED_2; // /2 - two directions, /29 - 1 cm = 29 micorseconds ~ 34 cm = 1 milisecond
     buf.rc.servo = cnt;
     buf.rc.motor_off = 0;
     buf.rc.servo_off = 0;
