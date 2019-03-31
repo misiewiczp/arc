@@ -69,8 +69,10 @@ int main (void)
         cout << i << "=" << (unsigned int)pwm_buf.cval[i] << "\n";
 
       cout << "\n";
-      cout << pwm_buf.rc.motor << " "<< pwm_buf.rc.motor_off << " " << (pwm_buf.rc.motor+pwm_buf.rc.motor_off) << "\n";
-      cout << pwm_buf.rc.servo << " "<< pwm_buf.rc.servo_off << " " << (pwm_buf.rc.servo+pwm_buf.rc.servo_off) <<"\n";
+      cout << "motor: "<<pwm_buf.rc.motor << " "<< pwm_buf.rc.motor_off << " " << (pwm_buf.rc.motor+pwm_buf.rc.motor_off) << "\n";
+      cout << "servo: "<<pwm_buf.rc.servo << " "<< pwm_buf.rc.servo_off << " " << (pwm_buf.rc.servo+pwm_buf.rc.servo_off) <<"\n";
+      cout << "distance: "<<pwm_buf.rc.distance << "\n";
+
       usleep(500000);
    }
 

@@ -10,17 +10,15 @@ except ImportError:
 import struct
 
 class camera_t(object):
-    __slots__ = ["timestamp", "x", "y", "radius"]
+    __slots__ = ["timestamp", "filename"]
 
-    __typenames__ = ["int64_t", "int8_t", "int8_t", "int8_t"]
+    __typenames__ = ["int64_t", "string"]
 
-    __dimensions__ = [None, None, None, None]
+    __dimensions__ = [None, None]
 
     def __init__(self):
         self.timestamp = 0
-        self.x = 0
-        self.y = 0
-        self.radius = 0
+        self.filename = ""
 
     def encode(self):
         buf = BytesIO()
@@ -29,7 +27,11 @@ class camera_t(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">qbbb", self.timestamp, self.x, self.y, self.radius))
+        buf.write(struct.pack(">q", self.timestamp))
+        __filename_encoded = self.filename.encode('utf-8')
+        buf.write(struct.pack('>I', len(__filename_encoded)+1))
+        buf.write(__filename_encoded)
+        buf.write(b"\0")
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -43,14 +45,16 @@ class camera_t(object):
 
     def _decode_one(buf):
         self = camera_t()
-        self.timestamp, self.x, self.y, self.radius = struct.unpack(">qbbb", buf.read(11))
+        self.timestamp = struct.unpack(">q", buf.read(8))[0]
+        __filename_len = struct.unpack('>I', buf.read(4))[0]
+        self.filename = buf.read(__filename_len)[:-1].decode('utf-8', 'replace')
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
         if camera_t in parents: return 0
-        tmphash = (0x9b9a7c1956359251) & 0xffffffffffffffff
+        tmphash = (0xc0571b220eda12cb) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

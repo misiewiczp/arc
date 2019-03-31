@@ -144,7 +144,7 @@ function steer(beta, gamma)
        beta = 30;
 
    new_motor = -Math.floor((gamma-35)/25*20)*5;
-   new_servo = Math.floor( beta / 30 * 20)*5;
+   new_servo = -Math.floor( beta / 30 * 20)*5;
 
   if (motor != new_motor || servo != new_servo)
   {
@@ -161,6 +161,7 @@ function steerTouch(pageY)
 	new_motor = -100;
     if (new_motor > 100)
 	new_motor = 100;
+    new_motor = Math.floor(new_motor/4);
     if (motor != new_motor)
     {
         motor = new_motor;

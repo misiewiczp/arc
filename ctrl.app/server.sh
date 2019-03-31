@@ -24,6 +24,11 @@ start_distance(){
 	python src/sensor/distance.py --print >> ${DUMP_DIR}/distance.csv
 }
 
+start_atmega(){
+	python src/sensor/atmega.py --print >> ${DUMP_DIR}/atmega.csv
+}
+
+
 start_imu(){
 	python src/sensor/imu.py --print >> ${DUMP_DIR}/imu.csv
 }
@@ -40,10 +45,19 @@ start_ctrl(){
 	python src/actuator/controller.py --print >> ${DUMP_DIR}/ctrl.csv
 }
 
-start_distance &
+start_halt(){
+	python src/util/halt_on_distance.py >> ${DUMP_DIR}/halt.csv
+}
+
+
+#start_halt &
+#start_distance &
+start_atmega &
 start_imu &
 #start_gps &
-#start_camera &
-start_ctrl &
+start_camera &
+#start_ctrl &
 
 wait
+# copy
+#rsync -avzr --include="*.csv" --include="*/" --exclude="*" /var/dump/ pi@aisoft.com.pl:/work/diska/pi/dump/

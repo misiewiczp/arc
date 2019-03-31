@@ -8,6 +8,7 @@ SERVO_PIN=18
 
 MOTOR_CAP=50
 SERVO_CAP=100
+is_on_halt = 0
 
 last_motor=0
 last_servo=0
@@ -17,7 +18,10 @@ lc = lcm.LCM()
 c_t = control_t()
 
 def arc_set_pwm(pin, val, cap):
-    if (val > cap):
+    global is_on_halt
+    if is_on_halt:
+        val = 0
+    elif (val > cap):
         val = cap
     elif (val < -cap):
         val = -cap
@@ -58,6 +62,17 @@ def request_handler_ctrl_motor(channel, data):
     lc.publish('CTRL_LOG', c_t.encode())
     print ( "{},{},{},{},{}".format(c_t.timestamp,last_servo, last_motor,SERVO_CAP,MOTOR_CAP) )
 
+def request_handler_halt(channel, data):
+    global is_on_halt
+    is_on_halt = 1
+    arc_set_pwm(MOTOR_PIN, 0, MOTOR_CAP)
+    print ( "{},0,0,0,0".format(time.time()) )
+
+def request_handler_unhalt(channel, data):
+    global is_on_halt
+    is_on_halt = 0
+    print ( "{},0,0,{},{}".format(time.time(), SERVO_CAP, MOTOR_CAP) )
+
 
 arc_set_pwm(MOTOR_PIN, 0, MOTOR_CAP)
 arc_set_pwm(SERVO_PIN, 0, SERVO_CAP)
@@ -72,6 +87,9 @@ print ( "{},{},{},{},{}".format(c_t.timestamp,last_servo, last_motor,SERVO_CAP,M
 lc.subscribe('CTRL_SERVO', request_handler_ctrl_servo)
 lc.subscribe('CTRL_MOTOR', request_handler_ctrl_motor)
 lc.subscribe('CTRL', request_handler_ctrl)
+lc.subscribe('CTRL_HALT', request_handler_halt)
+lc.subscribe('CTRL_UNHALT', request_handler_unhalt)
+
 
 try:
     while True:

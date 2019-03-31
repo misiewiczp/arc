@@ -16,16 +16,17 @@ args = parser.parse_args()
 #print(args.prc)
 #sys.exit()
 
+ADJUST_EVERY = 0.2
+
 lc = lcm.LCM()
 pid = PID.PID(P=0.1,I=0.01,D=0.01)
 pid.SetPoint = float(args.tgt_omega)
-pid.setSampleTime(0.01)
+pid.setSampleTime(ADJUST_EVERY)
 
 time_start = time.time()
 
 last_motor = 0
 last_adjust = time.time()
-ADJUST_EVERY = 0.01
 
 def adjust_motor(diff_motor):
     global lc
@@ -39,7 +40,7 @@ def adjust_motor(diff_motor):
 
     msg = control_t()
     msg.timestamp = time.time()
-    msg.motor = round(last_motor)
+    msg.motor = last_motor
     msg.servo = args.prc_servo
     lc.publish('CTRL', msg.encode())
 

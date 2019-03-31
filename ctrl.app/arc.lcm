@@ -23,23 +23,21 @@ struct gps_t {
 
 struct control_t {
     int64_t timestamp;
-    int8_t motor; 
-    int8_t servo;
+    float motor; 
+    float servo;
 }
 
 struct control_motor_t {
     int64_t timestamp;
-    int8_t motor; 
+    float motor; 
 }
 
 struct control_servo_t {
     int64_t timestamp;
-    int8_t servo;
+    float servo;
 }
 
 struct camera_t {
     int64_t timestamp;
-    int8_t x;
-    int8_t y;
-    int8_t radius;
+    string filename;
 }

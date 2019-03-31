@@ -1,7 +1,7 @@
 PROG_NAME=ktir
 ARDUINO_DIR=/usr/share/arduino
 BOARD_TAG=uno
-F_CPU=1000000L
+F_CPU=8000000L
 ARDUINO_PORT = 
 ARDUINO_LIBS = 
 include /usr/share/arduino/Arduino.mk

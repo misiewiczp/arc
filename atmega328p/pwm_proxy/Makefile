@@ -10,7 +10,7 @@ install:
 	gpio -g write 7 0
 	avrdude -p m328p -P /dev/spidev0.0 -c linuxspi -b 10000 -e -U flash:w:build-uno/pwm_proxy.hex 
 
-run:
+run: install
 	gpio -g write 7 1
 
 fuse:

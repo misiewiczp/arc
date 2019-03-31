@@ -12,13 +12,13 @@ import struct
 class control_servo_t(object):
     __slots__ = ["timestamp", "servo"]
 
-    __typenames__ = ["int64_t", "int8_t"]
+    __typenames__ = ["int64_t", "float"]
 
     __dimensions__ = [None, None]
 
     def __init__(self):
         self.timestamp = 0
-        self.servo = 0
+        self.servo = 0.0
 
     def encode(self):
         buf = BytesIO()
@@ -27,7 +27,7 @@ class control_servo_t(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">qb", self.timestamp, self.servo))
+        buf.write(struct.pack(">qf", self.timestamp, self.servo))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -41,14 +41,14 @@ class control_servo_t(object):
 
     def _decode_one(buf):
         self = control_servo_t()
-        self.timestamp, self.servo = struct.unpack(">qb", buf.read(9))
+        self.timestamp, self.servo = struct.unpack(">qf", buf.read(12))
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
         if control_servo_t in parents: return 0
-        tmphash = (0x812c96ad1411fda4) & 0xffffffffffffffff
+        tmphash = (0xd27fd0674dc2d88e) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

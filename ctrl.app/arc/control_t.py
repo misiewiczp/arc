@@ -12,14 +12,14 @@ import struct
 class control_t(object):
     __slots__ = ["timestamp", "motor", "servo"]
 
-    __typenames__ = ["int64_t", "int8_t", "int8_t"]
+    __typenames__ = ["int64_t", "float", "float"]
 
     __dimensions__ = [None, None, None]
 
     def __init__(self):
         self.timestamp = 0
-        self.motor = 0
-        self.servo = 0
+        self.motor = 0.0
+        self.servo = 0.0
 
     def encode(self):
         buf = BytesIO()
@@ -28,7 +28,7 @@ class control_t(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">qbb", self.timestamp, self.motor, self.servo))
+        buf.write(struct.pack(">qff", self.timestamp, self.motor, self.servo))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -42,14 +42,14 @@ class control_t(object):
 
     def _decode_one(buf):
         self = control_t()
-        self.timestamp, self.motor, self.servo = struct.unpack(">qbb", buf.read(10))
+        self.timestamp, self.motor, self.servo = struct.unpack(">qff", buf.read(16))
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
         if control_t in parents: return 0
-        tmphash = (0xe2a67abded9e4036) & 0xffffffffffffffff
+        tmphash = (0xcc5c654bac572c0d) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

@@ -5,8 +5,12 @@ import sys
 from signal import *
 import socket
 from threading import Thread
+from arc import camera_t
+import lcm
 
 dump_dir = sys.argv[1]
+
+lc = lcm.LCM()
 
 bRun = True
 
@@ -66,17 +70,21 @@ with picamera.PiCamera() as camera:
     camera.rotation = 180
     camera.framerate = 30
     camera.resolution = (1920, 1080)
-    camera.start_recording( DuplexOutput( dump_dir + '/video/video_{}.h264'.format( time.time() ) ), splitter_port=1, resize=(640,480), format='h264', profile='baseline' );
+    camera.start_recording( DuplexOutput( dump_dir + '/video/video_{}.h264'.format( time.time()*1000 ) ), splitter_port=1, resize=(640,480), format='h264', profile='baseline' );
 
     handler = lambda signum,frame: fn_handler(signum, frame, camera)
 
     signal(SIGINT, handler )
     signal(SIGTERM, handler )
 
-
+    c_t = camera_t()
     while bRun:
         t = time.time()
-        camera.capture(dump_dir + '/image/image_{}.jpeg'.format(t), format='jpeg', use_video_port=True)
+        c_t.timestamp = t*1000*1000
+        c_t.filename = dump_dir + '/image/image_{}.jpeg'.format(t*1000)
+        camera.capture(c_t.filename, format='jpeg', use_video_port=True)
+        lc.publish('CAMERA', c_t.encode())
+        print c_t.filename
         time.sleep(1)
 
 #    camera.stop_recording()
