@@ -81,7 +81,7 @@ with picamera.PiCamera() as camera:
     while bRun:
         t = time.time()
         c_t.timestamp = t*1000*1000
-        c_t.filename = dump_dir + '/image/image_{}.jpeg'.format(t*1000)
+        c_t.filename = dump_dir + '/image/image_{}.jpeg'.format(t)
         camera.capture(c_t.filename, format='jpeg', use_video_port=True)
         lc.publish('CAMERA', c_t.encode())
         print c_t.filename

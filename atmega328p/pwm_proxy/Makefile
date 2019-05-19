@@ -1,6 +1,7 @@
 ARDUINO_DIR=/usr/share/arduino
 BOARD_TAG=uno
 F_CPU=8000000L
+SPEED_DIV=1
 ARDUINO_PORT = 
 ARDUINO_LIBS = 
 include /usr/share/arduino/Arduino.mk

@@ -24,10 +24,11 @@ volatile unsigned char timer1_idx = 0;
 #define ULTRASOUND_SPEED_2 (29<<1)
 
 
-volatile int motor_trimmer = 4;
+volatile int motor_trimmer = 1;
 volatile int motor_max = 1600;
 volatile int motor_min = 1350;
 
+volatile int is_autonomous = 1;
 
 #define BUF_SIZE SPI_COMMAND_LEN
 volatile spi_command buf;
@@ -71,11 +72,14 @@ void setup() {
   pinMode(SERVO_PIN_IN, INPUT);
   pinMode(MOTOR_PIN_IN, INPUT);
 
-  EIMSK |= (1 << INT0); // enable INT1
-  EICRA |= (1 << ISC00); // CHANGE
+  if (!is_autonomous)
+  {
+    EIMSK |= (1 << INT0); // enable INT1
+    EICRA |= (1 << ISC00); // CHANGE
 
-  EIMSK |= (1 << INT1); // enable INT1
-  EICRA |= (1 << ISC10); // CHANGE
+    EIMSK |= (1 << INT1); // enable INT1
+    EICRA |= (1 << ISC10); // CHANGE
+  }
 
 // distance sensor
   DDRC |= (1<<PC5);  // DIST - TRIGGER
@@ -83,6 +87,7 @@ void setup() {
   DDRD |= (1<<PD7); // LED
   DDRB |= (1<<PB4); // MISO
 
+// whats that ?
   PCMSK2 |= (1<<PCINT17);
   PCICR |= (1<<PCIE2);
 
@@ -146,7 +151,8 @@ ISR( INT0_vect )
         //only worry about this if the timer has actually started
         if(motor_timer_start != 0)
         { 
-            motor_val = (int)(mymicrosdiff(motor_timer_start));
+            if (!is_autonomous)
+        	motor_val = (int)(mymicrosdiff(motor_timer_start));
             motor_timer_start = 0;
         }
     }
@@ -164,7 +170,8 @@ ISR( INT1_vect )
         //only worry about this if the timer has actually started
         if(servo_timer_start != 0)
         { 	    
-            servo_val = (int)(mymicrosdiff(servo_timer_start));
+	    if (!is_autonomous)
+        	servo_val = (int)(mymicrosdiff(servo_timer_start));
             servo_timer_start = 0;
         }
     }
@@ -195,33 +202,81 @@ ISR(TIMER1_OVF_vect){
         initMeasure();
 }
 
+
 volatile int position = -1;
+volatile int last_command = -1;
+
+volatile byte motor_servo_buf[4] = {0,};
+
 ISR (SPI_STC_vect)
 {
   byte c = SPDR;
 
-  if (c == REQ_RC)  // starting new sequence?
+  if (last_command == -1) {
+     switch(c){
+         case REQ_RC:
+         case 0x11:
+         case 0x12:
+         case 0x13:
+            last_command = c;
+         default:
+	    break;
+     }
+  }
+  
+  if (last_command == REQ_RC)
   {
-    buf.rc.motor = motor_val;
-    buf.rc.servo = servo_val;
-    buf.rc.motor_off = 0; //motor_off_val;
-    buf.rc.servo_off = 0; //servo_off_val;
-    buf.rc.distance = distance_val;
-    buf.rc.idx = timer1_idx;
-    position = 0;
+    if (c == REQ_RC)  // starting new sequence?
+    {
+	buf.rc.motor = motor_val;
+	buf.rc.servo = servo_val;
+	buf.rc.motor_off = 0; //motor_off_val;
+	buf.rc.servo_off = 0; //servo_off_val;
+	buf.rc.distance = distance_val;
+	buf.rc.idx = timer1_idx;
+	position = 0;
 
-    SPDR = 100; // ACK
-    return;
-  } else if (c == 0)
-  {
-
+	SPDR = 100; // ACK
+	return;
+    } else if (c == 0)
+    {
       if (position >= 0 && position < BUF_SIZE)
       {
 	SPDR = buf.cval[position];
         position++;
 	return;
       }
+    }
+    SPDR = 101;
+    last_command = -1;
+    position = -1;
+    return;
   }
 
-  SPDR = 101;
+  if (last_command == 0x13) {
+     if (position == -1)
+         position = 0;
+     else 
+     if (position >= 0 && position < 4)
+     {
+	motor_servo_buf[position++] = c;
+     }
+     else
+     if (position == 4 && c == 0xFF)
+     {
+        unsigned int tmp_motor_pwm = (((unsigned int)motor_servo_buf[1])<<8) + (unsigned int)motor_servo_buf[0];
+        unsigned int tmp_servo_pwm = (((unsigned int)motor_servo_buf[3])<<8) + (unsigned int)motor_servo_buf[2];
+	motor_val = tmp_motor_pwm;
+        servo_val = tmp_servo_pwm;
+        last_command = -1; // the end of data
+	position = -1;
+        SPDR = 0x13;
+        return;
+     }
+     SPDR = 0;
+     return;
+  }
+  
+  SPDR = 0xAA; //error
+  last_command = -1;
 }
