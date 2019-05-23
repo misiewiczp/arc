@@ -10,6 +10,11 @@ import lcm
 
 dump_dir = sys.argv[1]
 
+bSave = 0
+if (len(sys.argv) > 2):
+    if (sys.argv[2] == "--save"):
+        bSave = 1
+
 lc = lcm.LCM()
 
 bRun = True
@@ -28,15 +33,28 @@ def wait_connection():
     global bRun
     global connection
     server_socket = socket.socket()
-    server_socket.bind(('0.0.0.0', 5000))
+    server_socket.bind(('0.0.0.0', 5001))
     server_socket.listen(0)
     server_socket.settimeout(5)
     while bRun:
         try:
-            connection = server_socket.accept()[0].makefile('wb')
+            _connection = server_socket.accept()[0].makefile('wb')
             print "Have new connection"
+            if (connection):
+                tmp = connection
+                connection = _connection
+                print "Closing previous connection"
+                tmp.close()
+                print "Closed previous connection"
+            else:
+                connection = _connection
+            time.sleep(1)
         except socket.timeout:
             pass
+    if (connection):
+        tmp = connection
+        connection = 0
+        tmp.close()
 
 
 thread = Thread(target = wait_connection)
@@ -44,33 +62,53 @@ thread.start();
 
 class DuplexOutput(object):
 
-    def __init__(self, filename):
-        self.file_stream = open(filename, 'wb')
+    def __init__(self, filename, bSave):
+        self.bSave = bSave
+        if (self.bSave):
+            self.file_stream = open(filename, 'wb')
 
     def write(self, s):
-        self.file_stream.write(s)
+        if (self.bSave):
+            self.file_stream.write(s)
         global connection
         if (connection):
-            connection.write(s)
+            try:
+                connection.write(s)
+            except:
+                print "Error write"
+                connection = 0
+                pass
 
     def flush(self):
-        self.file_stream.flush()
+        if (self.bSave):
+            self.file_stream.flush()
         global connection
         if (connection):
-            connection.flush()
+            try:
+                connection.flush()
+            except:
+                print "Error flush"
+                connection = 0
+                pass
 
     def close(self):
-        self.file_stream.close()
+        if (self.bSave):
+            self.file_stream.close()
         global connection
         if (connection):
-            connection.close()
+            try:
+                connection.close()
+            except:
+                print "Error close"
+                connection = 0
+                pass
 
 
 with picamera.PiCamera() as camera:
     camera.rotation = 180
     camera.framerate = 30
     camera.resolution = (1920, 1080)
-    camera.start_recording( DuplexOutput( dump_dir + '/video/video_{}.h264'.format( time.time()*1000 ) ), splitter_port=1, resize=(640,480), format='h264', profile='baseline' );
+    camera.start_recording( DuplexOutput( dump_dir + '/video/video_{}.h264'.format( time.time()*1000 ), bSave ), splitter_port=1, resize=(640,480), format='h264', profile='baseline' );
 
     handler = lambda signum,frame: fn_handler(signum, frame, camera)
 
@@ -82,9 +120,10 @@ with picamera.PiCamera() as camera:
         t = time.time()
         c_t.timestamp = t*1000*1000
         c_t.filename = dump_dir + '/image/image_{}.jpeg'.format(t)
-        camera.capture(c_t.filename, format='jpeg', use_video_port=True)
-        lc.publish('CAMERA', c_t.encode())
-        print c_t.filename
+        if (bSave):
+            camera.capture(c_t.filename, format='jpeg', use_video_port=True)
+            lc.publish('CAMERA', c_t.encode())
+            print c_t.filename
         time.sleep(1)
 
 #    camera.stop_recording()

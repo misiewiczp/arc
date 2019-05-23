@@ -27,17 +27,30 @@ imu.setCompassEnable(True)
    
 poll_interval = imu.IMUGetPollInterval()  
 
+print (poll_interval)
+
 i_t = imu_t()
 lc = lcm.LCM()
+
+log_step = 0
 
 while True:
     hack = int(time.time()*1000)
 
     if imu.IMURead():
         data = imu.getIMUData()
+
         accel = data['accel']
         gyro = data['gyro']
         comp = data['compass']
+        fusionPose = data["fusionPose"]
+        pitch, roll, yaw = imu.getFusionData()
+        if (log_step % 50 == 0):
+            # pitch, roll, yaw
+            print("%f %f %f" % (pitch/math.pi*180,roll/math.pi*180,yaw/math.pi*180))
+#            print("%f %f %f" % (accel[0], accel[1], accel[2]))
+        log_step += 1
+
 #        temp = data['temperature']
 #        press = data['pressure']
         timestamp = int(data['timestamp']/1000)
@@ -76,5 +89,5 @@ while True:
 #            print( "{},{},{},{},{},{}".format( math.atan2(c[1],c[0]), math.atan2(c[2],c[0]), math.atan2(c[2],c[1]), math.atan2(c[0],c[1]), math.atan2(c[0],c[2]), math.atan2(c[1],c[2]) ) )
 
 #    else:
-    time.sleep(0.01)
-    #poll_interval*1.0/1000.0)
+
+    time.sleep(poll_interval*1.0/1000.0) #0.004 - 250Hz
