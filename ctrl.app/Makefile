@@ -6,7 +6,8 @@ DUMP_DIR=/var/dump/
 
 
 lcm: 
-#	lcm-gen -c --c-cpath=src/lcm --c-hpath=src/lcm/include arc.lcm
+	lcm-gen -c --c-cpath=src/lcm/c --c-hpath=src/lcm/c/include arc.lcm
+	lcm-gen --cpp --cpp-hpath=src/lcm/cpp --cpp-include=src/lcm/cpp/include arc.lcm
 	lcm-gen -p arc.lcm
 
 init:

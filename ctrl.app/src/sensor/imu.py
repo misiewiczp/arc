@@ -6,7 +6,7 @@ import os.path
 import time
 import math
 import lcm
-from arc import imu_t
+from arc import imu_t, imu_fusion_t
 
 bPrint = 0
 if (len(sys.argv) > 1 and sys.argv[1] == '--print'):
@@ -30,6 +30,7 @@ poll_interval = imu.IMUGetPollInterval()
 print (poll_interval)
 
 i_t = imu_t()
+if_t = imu_fusion_t()
 lc = lcm.LCM()
 
 log_step = 0
@@ -59,7 +60,15 @@ while True:
         i_t.accel = accel
         i_t.gyro = gyro
         i_t.compass = comp
-        lc.publish("IMU", i_t.encode())
+        if log_step % 10 == 0:
+            lc.publish("IMU", i_t.encode())
+
+        if_t.timestamp = timestamp
+        if_t.yaw = yaw
+        if_t.pitch = pitch
+        if_t.roll = roll
+        if log_step % 10 == 0:
+            lc.publish("IMU_FUSION", if_t.encode())
 
 # gyro - OK
 #        omega = round(180*gyro[2]/math.pi) #BAD

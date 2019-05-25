@@ -21,12 +21,14 @@ lc = lcm.LCM()
 
 def publishGPS(str):
     try:
+#        print(str)
         msg = pynmea2.parse(str)
         if msg.is_valid:
             g_t.timestamp = long(time.time()*1000*1000)
             g_t.lat = msg.latitude
             g_t.lon = msg.longitude
             g_t.vel = float(msg.spd_over_grnd)
+            print(g_t.timestamp, g_t.lat, g_t.lon, g_t.vel)
             lc.publish("GPS", g_t.encode())
     except pynmea2.nmea.ParseError as pe:
         if bPrint:

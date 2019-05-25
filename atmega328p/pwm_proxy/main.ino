@@ -9,17 +9,17 @@
 #define SERVO_PIN_ON _BV(PD3)
 #define MOTOR_PIN_ON _BV(PD2)
 
+#define TIMER1_MAX 15830
+#define MOTOR_0 1490
+#define SERVO_0 1500
 
-volatile unsigned int motor_val = 0;
-volatile unsigned int servo_val = 0;
+volatile unsigned int motor_val = MOTOR_0;
+volatile unsigned int servo_val = SERVO_0;
 volatile unsigned int distance_val = 0;
 
 volatile unsigned long timer1_counter = 0;
 volatile unsigned char timer1_idx = 0;
 
-#define TIMER1_MAX 15830
-#define MOTOR_0 1490
-#define SERVO_0 1500
 
 #define ULTRASOUND_SPEED_2 (29<<1)
 

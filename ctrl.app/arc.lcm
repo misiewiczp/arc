@@ -12,6 +12,14 @@ struct imu_t {
     float gyro[3];
 }
 
+struct imu_fusion_t {
+    int64_t timestamp;
+    float pitch;
+    float roll;
+    float yaw;
+}
+
+
 struct gps_t {
     int64_t timestamp;
     int32_t fix_time;
@@ -41,3 +49,52 @@ struct camera_t {
     int64_t timestamp;
     string filename;
 }
+
+struct req_plan_path_t {
+    int64_t timestamp;
+    double src[2];
+    double dst[2];
+    double yaw; // global, radians
+    int32_t nroad_points;
+    double road_x[nroad_points];
+    double road_y[nroad_points];
+    double road_w[nroad_points];  // radius of road
+}
+
+struct res_plan_path_t {
+    int64_t timestamp;
+    int64_t req_timestamp; //ID
+    int32_t npoints;
+    double points_x[npoints];
+    double points_y[npoints];
+}
+
+struct req_plan_mpc_t {
+    int64_t timestamp;
+    // state
+    double x;
+    double y;
+    double yaw; // global, radians
+    double vel;
+    double acc;
+    double dir; // wheel direction
+    // others
+    double ref_vel;
+    double latency;
+    // planned path
+    int32_t npoints;
+    double points_x[npoints];
+    double points_y[npoints];
+}
+
+struct res_plan_mpc_t {
+    int64_t timestamp;
+    int64_t req_timestamp; //ID
+    double delta_dir;
+    double delta_acc;
+    int32_t npoints;
+    double points_x[npoints];
+    double points_y[npoints];
+
+}
+

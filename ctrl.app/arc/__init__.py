@@ -11,3 +11,8 @@ from .control_servo_t import control_servo_t
 from .camera_t import camera_t
 from .gps_t import gps_t
 from .camera_image_t import camera_image_t
+from .req_plan_path_t import req_plan_path_t
+from .res_plan_path_t import res_plan_path_t
+from .req_plan_mpc_t import req_plan_mpc_t
+from .res_plan_mpc_t import res_plan_mpc_t
+from .imu_fusion_t import imu_fusion_t
