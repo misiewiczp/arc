@@ -1,0 +1,2 @@
+/usr/bin/ar qc libglc_interface.a  CMakeFiles/glc_interface.dir/src/glc_interface.cpp.o
+/usr/bin/ranlib libglc_interface.a

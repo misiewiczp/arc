@@ -36,11 +36,13 @@ model = cv2.dnn.readNetFromTensorflow('models/frozen_inference_graph.pb',
 def handle_camera(channel, data):
     global model
     msg = camera_t.decode(data)
-    print msg.filename
+    start = time.time()
+#    print msg.filename
     image = cv2.imread(msg.filename)
     image_height, image_width, _ = image.shape
     model.setInput(cv2.dnn.blobFromImage(image, size=(300, 300), swapRB=True))
     output = model.forward()
+    print (msg.filename, "FPS: ", 1/(time.time() - start))
 
     for detection in output[0, 0, :, :]:
         confidence = detection[2]

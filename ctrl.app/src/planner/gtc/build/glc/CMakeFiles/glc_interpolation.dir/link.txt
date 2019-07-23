@@ -1,0 +1,2 @@
+/usr/bin/ar qc libglc_interpolation.a  CMakeFiles/glc_interpolation.dir/src/glc_interpolation.cpp.o
+/usr/bin/ranlib libglc_interpolation.a

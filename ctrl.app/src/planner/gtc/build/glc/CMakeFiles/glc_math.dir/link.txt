@@ -1,0 +1,2 @@
+/usr/bin/ar qc libglc_math.a  CMakeFiles/glc_math.dir/src/glc_math.cpp.o
+/usr/bin/ranlib libglc_math.a

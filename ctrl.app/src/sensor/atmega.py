@@ -22,21 +22,26 @@ lc = lcm.LCM()
 
 while True:
    t = long(time.time()*1000*1000)
-   resp = spi.xfer2([0x01, 0,0, 0,0, 0,0, 0,0, 0,0, 0, 0])
+   resp = spi.xfer2([0x01, 0,0, 0,0, 0,0, 0,0, 0,0, 0, 0, 0])
 #   print resp
    dist = (int(resp[3])<<8)+resp[2]
-   pwm1 = (int(resp[5])<<8)+resp[4]
-   pwm2 = (int(resp[7])<<8)+resp[6]
+   motor_read = (int(resp[5])<<8)+resp[4]
+   servo_read = (int(resp[7])<<8)+resp[6]
+
+   motor_applied = (int(resp[9])<<8)+resp[8]
+   servo_applied = (int(resp[11])<<8)+resp[10]
+
    idx = resp[12]
+   is_autonomous = resp[13]
    if lastidx <> idx:
        d_t.measure = dist
        d_t.timestamp = t
        lc.publish("DSTN", d_t.encode())
        c_t.timestamp = t
-       c_t.motor = pwm1
-       c_t.servo = pwm2
+       c_t.motor = motor_applied
+       c_t.servo = servo_applied
        lc.publish('CTRL_LOG', c_t.encode())
        if bPrint:
-           print("{},{},{},{},{}".format(int(t/1000), idx, dist, pwm1, pwm2))
+           print("{},{},{},{},{},{}".format(int(t/1000), idx, dist, motor_applied, servo_applied, is_autonomous))
    lastidx = idx
    time.sleep(0.01)

@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../glc/./include/glc_interface.h
+vector
+-
+glc_interpolation.h
+../glc/./include/glc_interpolation.h
+
+../glc/./include/glc_interpolation.h
+vector
+-
+valarray
+-
+memory
+-
+cassert
+-
+iostream
+-
+
+../glc/./include/glc_numerical_integration.h
+glc_interface.h
+../glc/./include/glc_interface.h
+glc_interpolation.h
+../glc/./include/glc_interpolation.h
+
+/var/opt/arc/ctrl.app/src/planner/gtc/glc/src/glc_numerical_integration.cpp
+glc_numerical_integration.h
+-
+

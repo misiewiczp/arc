@@ -1,0 +1,2 @@
+/usr/bin/ar qc libglc_planner_core.a  CMakeFiles/glc_planner_core.dir/src/glc_planner_core.cpp.o
+/usr/bin/ranlib libglc_planner_core.a

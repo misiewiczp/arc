@@ -1,0 +1,2 @@
+/usr/bin/ar qc libglc_parameters.a  CMakeFiles/glc_parameters.dir/src/glc_parameters.cpp.o
+/usr/bin/ranlib libglc_parameters.a

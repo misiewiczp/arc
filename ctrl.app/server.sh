@@ -38,11 +38,11 @@ start_gps(){
 }
 
 start_camera(){
-	python src/sensor/camera.py ${DUMP_DIR}
+	python src/sensor/camera.py ${DUMP_DIR} --save
 }
 
 start_ctrl(){
-	python src/actuator/controller.py --print >> ${DUMP_DIR}/ctrl.csv
+	python src/actuator/controller_atmega.py --print >> ${DUMP_DIR}/ctrl.csv
 }
 
 start_halt(){
@@ -56,8 +56,9 @@ start_atmega &
 start_imu &
 #start_gps &
 start_camera &
-#start_ctrl &
+start_ctrl &
 
 wait
 # copy
 #rsync -avzr --include="*.csv" --include="*/" --exclude="*" /var/dump/ pi@aisoft.com.pl:/work/diska/pi/dump/
+#rsync -avzr --include="*" --include="*/" --exclude="*" /var/dump/ pi@192.168.0.11:/data/pi

@@ -1,5 +1,9 @@
 #include <SPI.h>
-#include "../pwm_read/proto.h"
+#include "proto.h"
+
+#define IS_AUTONOMOUS 0
+#define MEASURE_DISTANCE 0
+#define TRIM_MOTOR 0
 
 #define MISO_PIN 12
 
@@ -17,6 +21,10 @@ volatile unsigned int motor_val = MOTOR_0;
 volatile unsigned int servo_val = SERVO_0;
 volatile unsigned int distance_val = 0;
 
+volatile unsigned int servo_applied = servo_val;
+volatile unsigned int motor_applied = motor_val;
+
+
 volatile unsigned long timer1_counter = 0;
 volatile unsigned char timer1_idx = 0;
 
@@ -24,11 +32,11 @@ volatile unsigned char timer1_idx = 0;
 #define ULTRASOUND_SPEED_2 (29<<1)
 
 
-volatile int motor_trimmer = 1;
-volatile int motor_max = 1600;
-volatile int motor_min = 1350;
+volatile int motor_trimmer = (TRIM_MOTOR ? 1 : 1);
+volatile int motor_max = (TRIM_MOTOR ? 1600 : 2000);
+volatile int motor_min = (TRIM_MOTOR ? 1350 : 1000);
 
-volatile int is_autonomous = 1;
+volatile char is_autonomous = IS_AUTONOMOUS;
 
 #define BUF_SIZE SPI_COMMAND_LEN
 volatile spi_command buf;
@@ -82,15 +90,17 @@ void setup() {
   }
 
 // distance sensor
-  DDRC |= (1<<PC5);  // DIST - TRIGGER
-  DDRD &= ~(1<<PD1); // DIST - ECHO
-  DDRD |= (1<<PD7); // LED
-  DDRB |= (1<<PB4); // MISO
+  if (MEASURE_DISTANCE)
+  {
+      DDRC |= (1<<PC5);  // DIST - TRIGGER
+      DDRD &= ~(1<<PD1); // DIST - ECHO
+      DDRD |= (1<<PD7); // LED
+      DDRB |= (1<<PB4); // MISO
+  }
 
-// whats that ?
+// what's that ?
   PCMSK2 |= (1<<PCINT17);
   PCICR |= (1<<PCIE2);
-
 
   sei();
 }
@@ -181,10 +191,12 @@ ISR( INT1_vect )
 
 
 ISR(TIMER1_COMPA_vect) {
+// AUTOMATICALLY DONE BY HARDWARE
 //    PORTB &= ~(1<<PB0);
 }
 
 ISR(TIMER1_COMPB_vect) {
+// MUST BE MANUAL
     PORTB &= ~(1<<PB0);
 }
 
@@ -194,12 +206,32 @@ ISR(TIMER1_OVF_vect){
     PORTB |= (1<<PB0);
     timer1_counter += TIMER1_MAX;
     timer1_idx += 1;
-    OCR1B = (servo_val < 1000 ? 1000 : (servo_val > 2000 ? 2000 : servo_val)); ;
-    volatile int tmp_motor_val = MOTOR_0 + (motor_val >= MOTOR_0 ? (motor_val - MOTOR_0)/motor_trimmer : -((MOTOR_0-motor_val)/motor_trimmer));
-    OCR1A = (tmp_motor_val < motor_min ? motor_min : (tmp_motor_val > motor_max ? motor_max : tmp_motor_val));
+    // when to stop PWM wave
+    servo_applied = (servo_val < 1000 ? 1000 : (servo_val > 2000 ? 2000 : servo_val));
+    OCR1B = servo_applied;
+
+    // trim motor
+    volatile int tmp_motor_val = 
+	(TRIM_MOTOR ?    
+	 (MOTOR_0 + 
+	    (motor_val >= MOTOR_0 ? 
+		    (motor_val - MOTOR_0)/motor_trimmer 
+		    : -((MOTOR_0-motor_val)/motor_trimmer))
+	 )
+	 : motor_val
+	)
+	;
+    // when to stop PWM wave
+    motor_applied = (tmp_motor_val < motor_min ? motor_min : (tmp_motor_val > motor_max ? motor_max : tmp_motor_val));
+    OCR1A = motor_applied;
     sei();
+
+  if (MEASURE_DISTANCE)
+  {
+    // start measuring distance
     if (distance_timer_start == 0)
         initMeasure();
+  }
 }
 
 
@@ -215,10 +247,21 @@ ISR (SPI_STC_vect)
   if (last_command == -1) {
      switch(c){
          case REQ_RC:
+	    last_command = c;
+	    break;
          case 0x11:
          case 0x12:
          case 0x13:
-            last_command = c;
+            last_command = (is_autonomous ? c : -1);
+	    break;
+	 case 0x14:
+	    is_autonomous = 0;
+	    SPDR = 100; //ACK
+	    return;
+	 case 0x15:
+	    is_autonomous = 1;
+	    SPDR = 100;
+	    return;
          default:
 	    break;
      }
@@ -230,10 +273,11 @@ ISR (SPI_STC_vect)
     {
 	buf.rc.motor = motor_val;
 	buf.rc.servo = servo_val;
-	buf.rc.motor_off = 0; //motor_off_val;
-	buf.rc.servo_off = 0; //servo_off_val;
-	buf.rc.distance = distance_val;
+	buf.rc.motor_applied = motor_applied; 
+	buf.rc.servo_applied = servo_applied; 
+	buf.rc.distance = (MEASURE_DISTANCE ? distance_val : 0);
 	buf.rc.idx = timer1_idx;
+	buf.rc.is_autonomous = is_autonomous;
 	position = 0;
 
 	SPDR = 100; // ACK
@@ -276,6 +320,7 @@ ISR (SPI_STC_vect)
      SPDR = 0;
      return;
   }
+
   
   SPDR = 0xAA; //error
   last_command = -1;

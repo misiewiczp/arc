@@ -46,11 +46,11 @@ while True:
         comp = data['compass']
         fusionPose = data["fusionPose"]
         pitch, roll, yaw = imu.getFusionData()
-        if (log_step % 50 == 0):
+#        if (log_step % 50 == 0):
             # pitch, roll, yaw
-            print("%f %f %f" % (pitch/math.pi*180,roll/math.pi*180,yaw/math.pi*180))
-#            print("%f %f %f" % (accel[0], accel[1], accel[2]))
-        log_step += 1
+#            print("%f %f %f" % (pitch/math.pi*180,roll/math.pi*180,yaw/math.pi*180))
+##            print("%f %f %f" % (accel[0], accel[1], accel[2]))
+#        log_step += 1
 
 #        temp = data['temperature']
 #        press = data['pressure']
@@ -90,7 +90,7 @@ while True:
         if bPrint:
 #            print ("{},{},{},{},{},{}".format( timestamp, round(omega), round(a0), round(comp[0]), round(comp[1]), round(comp[2]) ) )
 #            print ("fmt {},{},{},{},{},{}".format( timestamp, round(omega), round(a0), comp[0], comp[1], comp[2] ) )
-            print ("{},{},{},{},{},{},{},{},{},{},{}".format(hack,timestamp,accel[0],accel[1],accel[2], gyro[0],gyro[1],gyro[2], comp[0],comp[1],comp[2]))
+            print ("{},{},{},{},{},{},{},{},{},{},{},{},{},{}".format(hack,timestamp,accel[0],accel[1],accel[2], gyro[0],gyro[1],gyro[2], comp[0],comp[1],comp[2],pitch,roll,yaw))
             
 
 #            print ( "{},{},{},{}".format(timestamp, round(omega), round(a0), round(heading)) )

@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "camera.py", line 11, in <module>
+    dump_dir = sys.argv[1]
+IndexError: list index out of range

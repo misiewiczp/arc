@@ -1,0 +1,2 @@
+/usr/bin/ar qc libglc_logging.a  CMakeFiles/glc_logging.dir/src/glc_logging.cpp.o
+/usr/bin/ranlib libglc_logging.a

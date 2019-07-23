@@ -1,0 +1,2 @@
+/usr/bin/ar qc libglc_node.a  CMakeFiles/glc_node.dir/src/glc_node.cpp.o
+/usr/bin/ranlib libglc_node.a

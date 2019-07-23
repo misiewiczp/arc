@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../glc/./include/glc_math.h
+iostream
+-
+vector
+-
+cassert
+-
+sstream
+-
+fstream
+-
+string
+-
+valarray
+-
+
+/var/opt/arc/ctrl.app/src/planner/gtc/glc/src/glc_math.cpp
+glc_math.h
+-
+

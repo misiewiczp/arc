@@ -1,0 +1,2 @@
+/usr/bin/ar qc libglc_numerical_integration.a  CMakeFiles/glc_numerical_integration.dir/src/glc_numerical_integration.cpp.o
+/usr/bin/ranlib libglc_numerical_integration.a

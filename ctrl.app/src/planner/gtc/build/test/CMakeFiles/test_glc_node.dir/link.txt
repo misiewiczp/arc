@@ -1,0 +1,1 @@
+/usr/bin/c++   -O3 -DNDEBUG -std=c++0x -fopenmp -O3   CMakeFiles/test_glc_node.dir/test_glc_node.cpp.o  -o test_glc_node ../glc/libglc_node.a /usr/local/lib/libgtest.a /usr/local/lib/libgtest_main.a ../glc/libglc_interpolation.a 
