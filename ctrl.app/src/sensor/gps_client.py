@@ -38,11 +38,11 @@ def publishGPS(str):
 
 
 while True:
-    serialPort = serial.Serial(port, baudrate = 9600, 
+    serialPort = serial.Serial(port, baudrate = 9600, #115200, 
         parity=serial.PARITY_NONE, 
         stopbits=serial.STOPBITS_ONE, 
         bytesize=serial.EIGHTBITS, 
-        xonxoff=True,
+        xonxoff=False,
         rtscts=False,
         dsrdtr=False,
         exclusive=True,
@@ -50,6 +50,7 @@ while True:
     try:
         while True:
             str = serialPort.readline()
+            print str
             if str.find('RMC') > 0:
                 publishGPS(str)
     except serial.SerialException as e:

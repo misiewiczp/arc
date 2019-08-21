@@ -5,6 +5,8 @@
 #define MEASURE_DISTANCE 0
 #define TRIM_MOTOR 0
 
+#define LED A5
+
 #define MISO_PIN 12
 
 #define SERVO_PIN_IN 3
@@ -96,6 +98,9 @@ void setup() {
       DDRD &= ~(1<<PD1); // DIST - ECHO
       DDRD |= (1<<PD7); // LED
       DDRB |= (1<<PB4); // MISO
+  } else {
+    pinMode(LED, OUTPUT);
+    digitalWrite(LED, HIGH);
   }
 
 // what's that ?
@@ -252,7 +257,7 @@ ISR (SPI_STC_vect)
          case 0x11:
          case 0x12:
          case 0x13:
-            last_command = (is_autonomous ? c : -1);
+            last_command = (is_autonomous ? c : -1);	    
 	    break;
 	 case 0x14:
 	    is_autonomous = 0;
@@ -265,11 +270,12 @@ ISR (SPI_STC_vect)
          default:
 	    break;
      }
+     position = -1;
   }
   
   if (last_command == REQ_RC)
   {
-    if (c == REQ_RC)  // starting new sequence?
+    if (c == REQ_RC && position == -1)  // starting new sequence?
     {
 	buf.rc.motor = motor_val;
 	buf.rc.servo = servo_val;
@@ -298,7 +304,7 @@ ISR (SPI_STC_vect)
   }
 
   if (last_command == 0x13) {
-     if (position == -1)
+     if (c == 0x13 && position == -1)
          position = 0;
      else 
      if (position >= 0 && position < 4)
@@ -321,7 +327,6 @@ ISR (SPI_STC_vect)
      return;
   }
 
-  
   SPDR = 0xAA; //error
   last_command = -1;
 }

@@ -2,3 +2,40 @@ Traceback (most recent call last):
   File "camera.py", line 11, in <module>
     dump_dir = sys.argv[1]
 IndexError: list index out of range
+Have new connection
+Error write
+Handle SIGNAL 15
+Stopped recording ..  waiting to exit
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/threading.py", line 801, in __bootstrap_inner
+    self.run()
+  File "/usr/lib/python2.7/threading.py", line 754, in run
+    self.__target(*self.__args, **self.__kwargs)
+  File "camera.py", line 39, in wait_connection
+    server_socket.bind(('0.0.0.0',  PORT))
+  File "/usr/lib/python2.7/socket.py", line 228, in meth
+    return getattr(self._sock,name)(*args)
+error: [Errno 98] Address already in use
+
+mmal: mmal_vc_port_enable: failed to enable port vc.null_sink:in:0(OPQV): ENOSPC
+mmal: mmal_port_enable: failed to enable connected port (vc.null_sink:in:0(OPQV))0x1dd4130 (ENOSPC)
+mmal: mmal_connection_enable: output port couldn't be enabled
+Traceback (most recent call last):
+  File "camera.py", line 110, in <module>
+    with picamera.PiCamera() as camera:
+  File "/usr/local/lib/python2.7/dist-packages/picamera/camera.py", line 433, in __init__
+    self._init_preview()
+  File "/usr/local/lib/python2.7/dist-packages/picamera/camera.py", line 513, in _init_preview
+    self, self._camera.outputs[self.CAMERA_PREVIEW_PORT])
+  File "/usr/local/lib/python2.7/dist-packages/picamera/renderers.py", line 558, in __init__
+    self.renderer.inputs[0].connect(source).enable()
+  File "/usr/local/lib/python2.7/dist-packages/picamera/mmalobj.py", line 2212, in enable
+    prefix="Failed to enable connection")
+  File "/usr/local/lib/python2.7/dist-packages/picamera/exc.py", line 184, in mmal_check
+    raise PiCameraMMALError(status, prefix)
+picamera.exc.PiCameraMMALError: Failed to enable connection: Out of resources
+Have new connection
+Error write
+Handle SIGNAL 15
+Stopped recording ..  waiting to exit

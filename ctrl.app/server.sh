@@ -25,12 +25,12 @@ start_distance(){
 }
 
 start_atmega(){
-	python src/sensor/atmega.py --print >> ${DUMP_DIR}/atmega.csv
+	python src/sensor/atmega.py --print | gzip >> ${DUMP_DIR}/atmega.csv.gz
 }
 
 
 start_imu(){
-	python src/sensor/imu.py --print >> ${DUMP_DIR}/imu.csv
+	python src/sensor/imu.py --print | gzip >> ${DUMP_DIR}/imu.csv.gz
 }
 
 start_gps(){
@@ -42,7 +42,7 @@ start_camera(){
 }
 
 start_ctrl(){
-	python src/actuator/controller_atmega.py --print >> ${DUMP_DIR}/ctrl.csv
+	python src/actuator/controller_atmega.py --print | gzip >> ${DUMP_DIR}/ctrl.csv.gz
 }
 
 start_halt(){
@@ -52,13 +52,13 @@ start_halt(){
 
 #start_halt &
 #start_distance &
-start_atmega &
-start_imu &
+#start_atmega &
+#start_imu &
 #start_gps &
-start_camera &
+#start_camera &
 start_ctrl &
 
 wait
 # copy
 #rsync -avzr --include="*.csv" --include="*/" --exclude="*" /var/dump/ pi@aisoft.com.pl:/work/diska/pi/dump/
-#rsync -avzr --include="*" --include="*/" --exclude="*" /var/dump/ pi@192.168.0.11:/data/pi
+#rsync -avzr --include="*" --include="*/" --exclude="*" /var/dump/ pi@192.168.0.113:/data/pi

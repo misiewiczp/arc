@@ -15,6 +15,9 @@ if (len(sys.argv) > 2):
     if (sys.argv[2] == "--save"):
         bSave = 1
 
+PORT = 5000
+
+
 lc = lcm.LCM()
 
 bRun = True
@@ -33,7 +36,7 @@ def wait_connection():
     global bRun
     global connection
     server_socket = socket.socket()
-    server_socket.bind(('0.0.0.0', 5001))
+    server_socket.bind(('0.0.0.0',  PORT))
     server_socket.listen(0)
     server_socket.settimeout(5)
     while bRun:
@@ -105,9 +108,10 @@ class DuplexOutput(object):
 
 
 with picamera.PiCamera() as camera:
-    camera.rotation = 180
+    camera.rotation = 0 #180
     camera.framerate = 30
-    camera.resolution = (1920, 1080)
+    camera.resolution = (640, 480)  
+#    camera.resolution = (1920, 1080)
     camera.start_recording( DuplexOutput( dump_dir + '/video/video_{}.h264'.format( time.time()*1000 ), bSave ), splitter_port=1, resize=(640,480), format='h264', profile='baseline' );
 
     handler = lambda signum,frame: fn_handler(signum, frame, camera)
@@ -120,10 +124,10 @@ with picamera.PiCamera() as camera:
         t = time.time()
         c_t.timestamp = t*1000*1000
         c_t.filename = dump_dir + '/image/image_{}.jpeg'.format(t)
-        if (bSave):
-            camera.capture(c_t.filename, format='jpeg', use_video_port=True)
-            lc.publish('CAMERA', c_t.encode())
-            print c_t.filename
+#        if (bSave):
+#            camera.capture(c_t.filename, format='jpeg', use_video_port=True)
+#            lc.publish('CAMERA', c_t.encode())
+#            print c_t.filename
         time.sleep(1)
 
 #    camera.stop_recording()

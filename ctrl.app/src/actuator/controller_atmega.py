@@ -23,6 +23,7 @@ is_on_halt = 0
 
 last_motor=0
 last_servo=0
+lastidx=-1
 
 lc = lcm.LCM()
 c_t = control_t()
@@ -32,6 +33,9 @@ d_t = distance_t()
 
 #unimplemented at Atmega
 def spi_send_motor_req(val):
+    print ("Unimplemented!!!")
+    return
+
     pwm_val = int(val) * 5 + MOTOR_0 # / 100.0 * 500.0
     resp = spi.xfer2([0x11, byte(pwm_val), byte(pwm_val>>8), 0xFF])
     if (resp[3] != 0x11):
@@ -41,6 +45,9 @@ def spi_send_motor_req(val):
 
 #unimplemented at Atmega
 def spi_send_servo_req(val):
+    print ("Unimplemented!!!")
+    return
+
     pwm_val = int(val) * 5 + SERVO_0 # / 100.0 * 500.0
     resp = spi.xfer2([0x12, byte(pwm_val), byte(pwm_val>>8), 0xFF])
     if (resp[3] != 0x12):
@@ -48,10 +55,11 @@ def spi_send_servo_req(val):
         return 0
     return 1
 
+
 def spi_send_motor_servo_req(val_motor, val_servo):
     pwm_val_motor = int(val_motor) * 5 + MOTOR_0 # / 100.0 * 500.0
     pwm_val_servo = int(val_servo) * 5 + SERVO_0 # / 100.0 * 500.0
-    resp = spi.xfer2([0x13, pwm_val_motor & 0xFF, (pwm_val_motor>>8)& 0xFF, (pwm_val_servo)& 0xFF,(pwm_val_servo>>8)& 0xFF, 0xFF, 0]) # on 0 we get result send for 0xFF
+    resp = spi.xfer2([0x13, pwm_val_motor & 0xFF, (pwm_val_motor>>8)& 0xFF, (pwm_val_servo)& 0xFF,(pwm_val_servo>>8)& 0xFF, 0xFF, 0]) # on 0 we get result sent for 0xFF
     if (resp[6] != 0x13):
         print ("Motor & Servo REQ error")
         print(resp)
@@ -60,24 +68,29 @@ def spi_send_motor_servo_req(val_motor, val_servo):
 
 
 def spi_read_stats():
+    global lastidx
     t = long(time.time()*1000*1000)
-    resp = spi.xfer2([0x01, 0,0, 0,0, 0,0, 0,0, 0,0, 0, 0])
+    resp = spi.xfer2([0x01, 0,0, 0,0, 0,0, 0,0, 0,0, 0, 0, 0])
 #   print resp
     dist = (int(resp[3])<<8)+resp[2]
-    pwm1 = (int(resp[5])<<8)+resp[4]
-    pwm2 = (int(resp[7])<<8)+resp[6]
+    motor_read = (int(resp[5])<<8)+resp[4]
+    servo_read = (int(resp[7])<<8)+resp[6]
+
+    motor_applied = (int(resp[9])<<8)+resp[8]
+    servo_applied = (int(resp[11])<<8)+resp[10]
+
     idx = resp[12]
-#    print("{},{},{},{},{}".format(time.time(), idx, dist, pwm1, pwm2))
-    if last_timer_idx <> idx:
+    is_autonomous = resp[13]
+    if lastidx <> idx:
         d_t.measure = dist
         d_t.timestamp = t
         lc.publish("DSTN", d_t.encode())
         c_t.timestamp = t
-        c_t.motor = pwm1
-        c_t.servo = pwm2
+        c_t.motor = motor_applied
+        c_t.servo = servo_applied
         lc.publish('CTRL_LOG', c_t.encode())
         if bPrint:
-            print("{},{},{},{},{}".format(int(t/1000), idx, dist, pwm1, pwm2))
+            print("{},{},{},{},{},{}".format(int(t/1000), idx, dist, motor_applied, servo_applied, is_autonomous))
     lastidx = idx
 
 
